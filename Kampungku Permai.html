@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Kampungku Permai</title>
+<link href="https://fonts.googleapis.com/css2?family=Lateef:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#d9f3c4;--bg2:#bfe8a0;--card:#fffdf2;--ink:#3b2f1e;--accent:#ff8a65;--ok:#43a047;--bad:#e53935;--key:#fff;--keyb:#e0c68f;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1f3a22;--bg2:#2a4a2d;--card:#2d2a22;--ink:#f6efd8;--key:#443e30;--keyb:#6b5d3a}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'Lateef','Noto Naskh Arabic','Traditional Arabic',serif;font-size:clamp(20px,2.6vmin,30px);touch-action:none}
+body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);display:flex;flex-direction:column;background:radial-gradient(circle at 20% 10%,var(--bg2),var(--bg))}
+#hud{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 14px;font-weight:700;font-size:1.25em}
+#hud .t{font-size:1.1em}
+#hud button{font:inherit;border:0;border-radius:14px;background:var(--card);color:var(--ink);padding:2px 12px;cursor:pointer}
+#stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:4px}
+canvas{border-radius:18px;box-shadow:0 6px 0 rgba(0,0,0,.18);background:#a5d86b;max-width:100%;max-height:100%}
+.ov{position:fixed;inset:0;background:rgba(40,60,30,.75);display:none;align-items:center;justify-content:center;padding:12px;overflow:auto;z-index:5}
+.ov.on{display:flex}
+.card{background:var(--card);border-radius:24px;padding:18px 22px;max-width:min(94vw,760px);width:100%;max-height:96vh;overflow:auto;text-align:center;box-shadow:0 8px 0 rgba(0,0,0,.2)}
+.card h1{margin:0 0 4px;font-size:2.2em;color:var(--accent)}
+.card ul{text-align:left;margin:8px auto;padding-left:1.2em;line-height:1.3;max-width:560px}
+.big{font-size:3.2em;line-height:1}
+.btn{font:inherit;font-weight:700;font-size:1.3em;border:0;border-radius:18px;padding:6px 26px;background:var(--accent);color:#fff;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.25);margin:6px 4px}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.25)}
+#word{font-size:2.2em;font-weight:700;color:var(--accent)}
+#ans{direction:rtl;min-height:1.7em;font-size:2.6em;line-height:1.6;border:3px dashed var(--keyb);border-radius:16px;margin:6px 0;background:var(--key)}
+#kb{display:grid;grid-template-columns:repeat(auto-fit,minmax(clamp(38px,8vmin,64px),1fr));gap:5px;direction:rtl}
+#kb button{font:inherit;font-size:1.9em;line-height:1.35;border:2px solid var(--keyb);border-radius:12px;background:var(--key);color:var(--ink);cursor:pointer;padding:0}
+#kb button:active{background:var(--keyb)}
+#fb{min-height:1.4em;font-size:1.4em;font-weight:700}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+</style>
+</head>
+<body>
+<div id="hud"><span>⭐ <span id="sc">0</span></span><span class="t">🏡 Kampungku Permai</span><span id="lv"></span><span>❓ <span id="qn">0</span>/10</span><button id="mute" aria-label="Bunyi">🔊</button></div>
+<div id="stage"><canvas id="c"></canvas></div>
+
+<div class="ov on" id="start"><div class="card">
+<div class="big">🐍🍎</div><h1>Kampungku Permai</h1>
+<b>Arahan Permainan</b>
+<ul>
+<li>Gerakkan ular guna <b>kekunci anak panah</b> atau <b>seret (swipe)</b> pada skrin.</li>
+<li>Soalan hanya muncul apabila ular <b>makan buah</b> 🍎🍌🍇.</li>
+<li>Eja perkataan dalam <b>tulisan Jawi</b> guna papan kekunci yang disediakan, kemudian tekan <b>Hantar</b>.</li>
+<li>Jawapan betul = <b>10 markah</b>. Jawapan salah = nyawa berkurang.</li>
+<li>Jangan langgar bom 💣! Jika terkena bom, nyawa terus berkurang (tiada soalan).</li>
+<li>Anda ada <b>5 nyawa</b> ❤️. Jawab 10 soalan untuk menamatkan permainan!</li>
+</ul>
+<button class="btn" id="go">Mula Bermain</button></div></div>
+
+<div class="ov" id="q"><div class="card">
+<div id="why"></div><div>Eja dalam Jawi:</div><div id="word"></div>
+<div id="ans"></div><div id="fb"></div><div id="kb"></div>
+<button class="btn" id="del" style="background:#8d6e63">⌫ Padam</button><button class="btn" id="sub">Hantar ✔</button></div></div>
+
+<div class="ov" id="end"><div class="card"><div class="big" id="ei"></div><h1 id="et"></h1><div id="es" style="font-size:1.6em"></div><button class="btn" id="again">Main Lagi</button></div></div>
+
+<script>
+const QS=[["Bahaya","بهاي"],["Pusara","ڤوسارا"],["Dahaga","دهاݢ"],["Cendawan","چنداون"],["Rambutan","رمبوتن"],["Fenomena","فينومينا"],["Pancaroba","ڤنچاروبا"],["Piala","ڤيالا"],["Harimau","هاريماو"],["Cempedak","چمڤدق"]];
+const KEYS="ا ب ت ث ج چ ح خ د ذ ر ز س ش ص ض ط ظ ع غ ڠ ف ڤ ق ک ݢ ل م ن ڽ و ۏ ه ء ي ى ة".split(" ");
+const FRUITS=["🍎","🍌","🍇","🍉","🍍","🍓"];
+const N=14,$=id=>document.getElementById(id);
+const cv=$("c"),cx=cv.getContext("2d");
+let snake,dir,nd,fruit,bombs,score,lives,qi,order,timer,playing,asking,cur,pending,fi,pop;
+// ---- audio ----
+let AC,muted=false,mg,musicT=0,musicI=null;
+function ac(){if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();mg=AC.createGain();mg.gain.value=muted?0:1;mg.connect(AC.destination)}if(AC.state==="suspended")AC.resume()}
+function tone(f,t,d,type="sine",v=.2,at=0){if(!AC)return;const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+at;o.type=type;o.frequency.setValueAtTime(f,s);g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.connect(g);g.connect(mg);o.start(s);o.stop(s+d)}
+const sfx={eat:()=>{tone(660,0,.1,"square",.12);tone(880,0,.12,"square",.12,.08)},
+ok:()=>[523,659,784,1047].forEach((f,i)=>tone(f,0,.18,"triangle",.25,i*.1)),
+bad:()=>{tone(220,0,.25,"sawtooth",.2);tone(150,0,.35,"sawtooth",.2,.2)},
+bomb:()=>{if(!AC)return;const b=AC.createBuffer(1,AC.sampleRate*.5,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);const s=AC.createBufferSource(),g=AC.createGain();s.buffer=b;g.gain.value=.5;s.connect(g);g.connect(mg);s.start();tone(90,0,.4,"sine",.4)}};
+const MEL=[262,330,392,330,294,349,440,349,262,330,392,523,494,392,330,294];
+function music(){if(musicI)return;musicI=setInterval(()=>{if(AC&&!muted){tone(MEL[musicT%16],0,.28,"triangle",.07);if(musicT%4==0)tone(MEL[musicT%16]/2,0,.5,"sine",.07)}musicT++},300)}
+$("mute").onclick=()=>{ac();muted=!muted;mg.gain.value=muted?0:1;$("mute").textContent=muted?"🔇":"🔊"};
+// ---- layout ----
+function fit(){const st=$("stage"),s=Math.floor(Math.min(st.clientWidth-8,st.clientHeight-8)/N)*N;cv.width=cv.height=Math.max(s,N*10);cv.style.width=cv.style.height=cv.width+"px";draw()}
+addEventListener("resize",fit);
+// ---- game ----
+function free(){let p;do{p=[Math.floor(Math.random()*N),Math.floor(Math.random()*N)]}while(snake.some(s=>s[0]==p[0]&&s[1]==p[1])||(fruit&&fruit[0]==p[0]&&fruit[1]==p[1])||bombs.some(b=>b[0]==p[0]&&b[1]==p[1])||Math.abs(p[0]-snake[0][0])+Math.abs(p[1]-snake[0][1])<3);return p}
+function place(){fruit=null;bombs=[];fruit=free();fi=Math.floor(Math.random()*FRUITS.length);for(let i=0;i<4;i++)bombs.push(free())}
+function resetSnake(len){const m=Math.floor(N/2);snake=[];for(let i=0;i<len;i++)snake.push([m-i,m]);dir=nd=[1,0]}
+function start(){ac();music();order=QS.map((q,i)=>i).sort(()=>Math.random()-.5);qi=0;score=0;lives=5;resetSnake(3);place();playing=true;asking=false;hud();["start","end","q"].forEach(i=>$(i).classList.remove("on"));clearInterval(timer);timer=setInterval(tick,190);fit()}
+function hud(){$("sc").textContent=score;$("lv").textContent="❤️".repeat(lives)+"🖤".repeat(5-lives);$("qn").textContent=qi}
+function tick(){if(!playing||asking)return;dir=nd;const h=snake[0],n=[(h[0]+dir[0]+N)%N,(h[1]+dir[1]+N)%N];
+ snake.unshift(n);
+ if(bombs.some(b=>b[0]==n[0]&&b[1]==n[1])){snake.pop();sfx.bomb();pop={x:n[0],y:n[1],t:8};lives--;hud();if(lives<=0){draw();finish();return}resetSnake(3);place();draw();return}
+ if(n[0]==fruit[0]&&n[1]==fruit[1]){sfx.eat();ask("fruit");return}
+ snake.pop();draw()}
+function ask(why){asking=true;pending=why;cur=QS[order[qi]];$("why").innerHTML=why=="bomb"?"💥 Alamak, terkena bom!<br>Jawab betul untuk selamat.":"😋 Yummy! Jawab soalan ini.";$("word").textContent=cur[0];$("ans").textContent="";$("fb").textContent="";$("sub").style.display=$("del").style.display="";draw();setTimeout(()=>$("q").classList.add("on"),why=="bomb"?500:150)}
+$("kb").innerHTML=KEYS.map(k=>`<button>${k}</button>`).join("");
+$("kb").onclick=e=>{if(e.target.tagName=="BUTTON"&&!$("sub").disabled){$("ans").textContent+=e.target.textContent;tone(500,0,.05,"square",.06)}};
+$("del").onclick=()=>{ac();$("ans").textContent=$("ans").textContent.slice(0,-1)};
+$("sub").onclick=()=>{const a=$("ans").textContent.replace(/\s/g,""),right=a===cur[1],fb=$("fb");
+ $("sub").disabled=true;
+ if(right){score+=10;sfx.ok();fb.innerHTML='<span class="ok">✔ Betul! +10 markah</span>'}
+ else{lives--;sfx.bad();fb.innerHTML='<span class="bad">✘ Salah. Jawapan: <span dir="rtl">'+cur[1]+'</span></span>'}
+ qi++;hud();
+ setTimeout(()=>{$("sub").disabled=false;$("q").classList.remove("on");after(right)},right?1100:2200)};
+function after(right){
+ if(pending=="bomb"){resetSnake(3)}else if(right){const t=snake[snake.length-1];snake.push([t[0],t[1]])}
+ if(lives<=0||qi>=QS.length){finish();return}
+ place();asking=false;draw()}
+function finish(){playing=false;clearInterval(timer);const win=lives>0;$("ei").textContent=win?"🏆":"😢";$("et").textContent=win?"Tahniah!":"Nyawa Habis";$("es").textContent="Markah anda: "+score+" / "+QS.length*10;$("end").classList.add("on")}
+$("go").onclick=start;$("again").onclick=start;
+// ---- input ----
+const K={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1],a:[-1,0],d:[1,0],w:[0,-1],s:[0,1]};
+function turn(v){if(v[0]+dir[0]!==0||v[1]+dir[1]!==0)nd=v}
+addEventListener("keydown",e=>{const v=K[e.key];if(v&&playing&&!asking){e.preventDefault();turn(v)}});
+let t0;cv.addEventListener("touchstart",e=>{t0=e.touches[0]},{passive:true});
+cv.addEventListener("touchmove",e=>{if(!t0||!playing||asking)return;const t=e.touches[0],dx=t.clientX-t0.clientX,dy=t.clientY-t0.clientY;if(Math.max(Math.abs(dx),Math.abs(dy))>22){turn(Math.abs(dx)>Math.abs(dy)?[Math.sign(dx),0]:[0,Math.sign(dy)]);t0=t}},{passive:true});
+let md;cv.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch")md=e});
+cv.addEventListener("pointermove",e=>{if(!md||!playing||asking||e.pointerType==="touch")return;const dx=e.clientX-md.clientX,dy=e.clientY-md.clientY;if(Math.max(Math.abs(dx),Math.abs(dy))>25){turn(Math.abs(dx)>Math.abs(dy)?[Math.sign(dx),0]:[0,Math.sign(dy)]);md=e}});
+addEventListener("pointerup",()=>md=null);
+// ---- draw ----
+function emoji(ch,x,y,c,s=.8){cx.font=(c*s)+"px serif";cx.textAlign="center";cx.textBaseline="middle";cx.fillText(ch,x*c+c/2,y*c+c/2+c*.05)}
+function draw(){if(!snake)return;const c=cv.width/N;
+ for(let i=0;i<N;i++)for(let j=0;j<N;j++){cx.fillStyle=(i+j)%2?"#a5d86b":"#98cf5c";cx.fillRect(i*c,j*c,c,c)}
+ if(fruit)emoji(FRUITS[fi],fruit[0],fruit[1],c);
+ bombs.forEach(b=>emoji("💣",b[0],b[1],c));
+ for(let i=snake.length-1;i>=0;i--){const [x,y]=snake[i],px=x*c+c/2,py=y*c+c/2;
+  cx.fillStyle=i%2?"#ffb74d":"#ffa040";cx.beginPath();cx.arc(px,py,c*(i?.42:.5),0,7);cx.fill();
+  if(i==0){const dx=dir[0],dy=dir[1],ex=-dy||0,ey=dx||0;
+   [-1,1].forEach(s=>{const ox=px+dx*c*.12+(dy?s*c*.2:0),oy=py+dy*c*.12+(dx?s*c*.2:0);
+    cx.fillStyle="#fff";cx.beginPath();cx.arc(ox,oy,c*.15,0,7);cx.fill();cx.fillStyle="#222";cx.beginPath();cx.arc(ox+dx*c*.05,oy+dy*c*.05,c*.08,0,7);cx.fill();
+    cx.fillStyle="rgba(255,90,120,.5)";cx.beginPath();cx.arc(ox-dx*c*.0+(dy?s*c*.1:0)-dx*c*.12,oy+(dx?s*c*.1:0)-dy*c*.12,c*.08,0,7);cx.fill()});
+   cx.strokeStyle="#7a3b00";cx.lineWidth=Math.max(2,c*.05);cx.beginPath();cx.arc(px+dx*c*.22,py+dy*c*.22+(dy==0?c*.05:0),c*.09,0,3.14);cx.stroke()}}
+ if(pop&&pop.t>0){emoji("💥",pop.x,pop.y,c,1.4);pop.t--}}
+fit();
+</script>
+</body>
+</html>
